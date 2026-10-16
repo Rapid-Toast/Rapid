@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Table Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f4;--panel:#fff;--ink:#1d2433;--mute:#667085;--line:#cfd6de;--acc:#1f6f5c;--acc-ink:#fff;--head:#dfe9e4;--stripe:#f4f8f6;--sel:#e3f2ec;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171d;--panel:#1b222b;--ink:#e6ebf0;--mute:#97a3b1;--line:#34404d;--acc:#4cc2a0;--acc-ink:#0c1a15;--head:#233a33;--stripe:#202a33;--sel:#21423a}}
+:root[data-theme="dark"]{--bg:#12171d;--panel:#1b222b;--ink:#e6ebf0;--mute:#97a3b1;--line:#34404d;--acc:#4cc2a0;--acc-ink:#0c1a15;--head:#233a33;--stripe:#202a33;--sel:#21423a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+h1.app{font-size:22px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 16px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-right:10px;margin-right:2px;border-right:1px solid var(--line)}
+.grp:last-child{border-right:0}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--acc)}
+button.pri{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:500}
+button.danger:hover{border-color:#c0392b;color:#c0392b}
+input[type=number]{width:62px;cursor:text}
+:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+label.chk{display:flex;gap:6px;align-items:center;color:var(--mute)}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.title{font-size:20px;font-weight:600;margin:0 0 12px;padding:2px 4px;outline:0;border-radius:4px;min-height:1.4em}
+.title:empty::before{content:attr(data-ph);color:var(--mute)}
+.scroll{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;min-width:100%}
+td,th{padding:7px 10px;min-width:90px;vertical-align:top;outline:0;word-break:break-word}
+th.lab{background:var(--bg);color:var(--mute);font-weight:500;font-size:12px;text-align:center;min-width:0;width:34px;border:1px solid var(--line);user-select:none}
+.s-grid td{border:1px solid var(--line)}
+.s-lines td{border-bottom:1px solid var(--line)}
+.s-stripe td{border:0}
+.s-stripe tr.body:nth-child(even) td{background:var(--stripe)}
+td.h{background:var(--head);font-weight:600}
+.s-lines td.h{border-bottom:2px solid var(--ink)}
+td:focus{box-shadow:inset 0 0 0 2px var(--acc);background:var(--sel)}
+.hint{color:var(--mute);font-size:13px;margin-top:10px}
+.lib{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.lib[hidden]{display:none}
+.lib h2{font-size:15px;margin:0 0 8px}
+.lib .empty{color:var(--mute);margin:0}
+.li{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.li:first-of-type{border-top:0}
+.li .nm{flex:1;min-width:0}
+.li .nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .nm span{color:var(--mute);font-size:13px}
+.li.on .nm b::after{content:" (open)";color:var(--acc);font-weight:500}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
+@media print{
+ body{background:#fff;color:#000}
+ .wrap{padding:0;max-width:none}
+ .noprint,.lab,.hint,.toast,h1.app,.sub{display:none!important}
+ .sheet{border:0;padding:0;background:#fff}
+ td{color:#000;border-color:#555!important;min-width:0}
+ td.h{background:#e8e8e8!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .s-stripe tr.body:nth-child(even) td{background:#f2f2f2!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ td:focus{box-shadow:none;background:none}
+ .scroll{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <h1 class="app noprint">Table Builder</h1>
+ <p class="sub noprint">Type into the cells, shape the table, then copy it into Excel, Word or email, or print it.</p>
+
+ <div class="bar noprint">
+  <div class="grp">
+   <input type="number" id="nr" min="1" max="200" value="5" aria-label="Rows"> <span>rows ×</span>
+   <input type="number" id="nc" min="1" max="26" value="4" aria-label="Columns"> <span>columns</span>
+   <button id="make">New table</button>
+  </div>
+  <div class="grp">
+   <button id="addR">Add row</button><button id="addC">Add column</button>
+   <button id="delR" class="danger">Delete row</button><button id="delC" class="danger">Delete column</button>
+  </div>
+  <div class="grp">
+   <button data-al="left" title="Align column left">Left</button><button data-al="center" title="Align column center">Center</button><button data-al="right" title="Align column right">Right</button>
+  </div>
+  <div class="grp">
+   <label class="chk"><input type="checkbox" id="hdr" checked> Header row</label>
+   <select id="sty" aria-label="Table style"><option value="grid">Full grid</option><option value="lines">Row lines</option><option value="stripe">Striped</option></select>
+  </div>
+  <div class="grp">
+   <button id="copy" class="pri">Copy table</button>
+   <button id="print" class="pri">Print</button>
+   <button id="csv">Download CSV</button>
+  </div>
+  <div class="grp">
+   <button id="save" class="pri">Save</button><button id="saveAs">Save as new</button><button id="lib">My tables (0)</button>
+  </div>
+ </div>
+
+ <div class="lib noprint" id="libp" hidden>
+  <h2>My saved tables</h2>
+  <div id="libl"></div>
+ </div>
+
+ <div class="sheet">
+  <div class="title" id="title" contenteditable="true" data-ph="Table title (optional)" spellcheck="false"></div>
+  <div class="scroll"><table id="t"></table></div>
+ </div>
+ <p class="hint noprint">Tab, Enter and arrow keys move between cells. You can paste data copied from Excel or Google Sheets straight into the grid. Your table is saved in this browser.</p>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+var S={title:"",rows:[],aligns:[],header:true,style:"grid"};
+var cur={r:0,c:0};
+var $=function(i){return document.getElementById(i)};
+var tbl=$("t");
+
+function blank(r,c){var a=[];for(var i=0;i<r;i++){a.push(new Array(c).fill(""))}return a}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function colName(i){return String.fromCharCode(65+i)}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove("on")},1800)}
+
+function save(){try{localStorage.setItem("tb-v1",JSON.stringify(S))}catch(e){}}
+function load(){try{var d=JSON.parse(localStorage.getItem("tb-v1")||"null");if(d&&d.rows&&d.rows.length){S=d;return true}}catch(e){}return false}
+
+function render(focus){
+ var cols=S.rows[0].length,h="<tr><th class='lab'></th>";
+ for(var c=0;c<cols;c++)h+="<th class='lab'>"+colName(c)+"</th>";
+ h+="</tr>";
+ S.rows.forEach(function(row,r){
+  var isH=S.header&&r===0;
+  h+="<tr class='"+(isH?"head":"body")+"'><th class='lab'>"+(r+1)+"</th>";
+  row.forEach(function(v,c){
+   h+="<td contenteditable='true' spellcheck='false' class='"+(isH?"h":"")+"' data-r='"+r+"' data-c='"+c+"' style='text-align:"+(S.aligns[c]||"left")+"'>"+esc(v)+"</td>";
+  });
+  h+="</tr>";
+ });
+ tbl.className="s-"+S.style;
+ tbl.innerHTML=h;
+ $("title").textContent=S.title;
+ $("hdr").checked=S.header;$("sty").value=S.style;
+ if(focus){var td=cell(cur.r,cur.c);if(td)td.focus()}
+ save();
+}
+function cell(r,c){return tbl.querySelector("td[data-r='"+r+"'][data-c='"+c+"']")}
+
+function newTable(){
+ var r=Math.max(1,Math.min(200,+$("nr").value||1)),c=Math.max(1,Math.min(26,+$("nc").value||1));
+ S.rows=blank(r,c);S.aligns=new Array(c).fill("left");S.id=null;S.title="";cur={r:0,c:0};render(true);
+}
+function addRow(){S.rows.splice(cur.r+1,0,new Array(S.rows[0].length).fill(""));cur.r++;render(true)}
+function addCol(){S.rows.forEach(function(row){row.splice(cur.c+1,0,"")});S.aligns.splice(cur.c+1,0,"left");cur.c++;render(true)}
+function delRow(){if(S.rows.length<2){toast("A table needs at least one row");return}S.rows.splice(cur.r,1);cur.r=Math.min(cur.r,S.rows.length-1);render(true)}
+function delCol(){if(S.rows[0].length<2){toast("A table needs at least one column");return}S.rows.forEach(function(row){row.splice(cur.c,1)});S.aligns.splice(cur.c,1);cur.c=Math.min(cur.c,S.rows[0].length-1);render(true)}
+
+tbl.addEventListener("focusin",function(e){var t=e.target;if(t.dataset&&t.dataset.r!==undefined){cur={r:+t.dataset.r,c:+t.dataset.c}}});
+tbl.addEventListener("input",function(e){var t=e.target;if(t.dataset&&t.dataset.r!==undefined){S.rows[+t.dataset.r][+t.dataset.c]=t.innerText.replace(/\n/g,"");save()}});
+$("title").addEventListener("input",function(e){S.title=e.target.innerText.trim();save()});
+
+tbl.addEventListener("keydown",function(e){
+ var t=e.target;if(!t.dataset||t.dataset.r===undefined)return;
+ var r=+t.dataset.r,c=+t.dataset.c,R=S.rows.length,C=S.rows[0].length,nr=r,nc=c;
+ if(e.key==="Enter"){e.preventDefault();nr=e.shiftKey?r-1:r+1;if(nr>=R){S.rows.push(new Array(C).fill(""));render();}}
+ else if(e.key==="ArrowDown"&&e.altKey===false&&atEdge(t,"end")){nr=r+1}
+ else if(e.key==="ArrowUp"&&atEdge(t,"start")){nr=r-1}
+ else if(e.key==="ArrowRight"&&atEdge(t,"end")){nc=c+1}
+ else if(e.key==="ArrowLeft"&&atEdge(t,"start")){nc=c-1}
+ else if(e.key==="Tab"){e.preventDefault();nc=e.shiftKey?c-1:c+1;if(nc>=C){nc=0;nr=r+1;if(nr>=R){S.rows.push(new Array(C).fill(""));render()}}if(nc<0){nc=C-1;nr=r-1}}
+ else return;
+ if(e.key!=="Enter"&&e.key!=="Tab")e.preventDefault();
+ var n=cell(nr,nc);if(n){n.focus();placeCaret(n)}
+});
+function atEdge(el,w){var s=getSelection();if(!s.rangeCount)return true;var rg=s.getRangeAt(0);if(!rg.collapsed)return false;var len=el.innerText.length;
+ var pre=rg.cloneRange();pre.selectNodeContents(el);pre.setEnd(rg.endContainer,rg.endOffset);var p=pre.toString().length;return w==="start"?p===0:p>=len}
+function placeCaret(el){var rg=document.createRange();rg.selectNodeContents(el);rg.collapse(false);var s=getSelection();s.removeAllRanges();s.addRange(rg)}
+
+tbl.addEventListener("paste",function(e){
+ var t=e.target;if(!t.dataset||t.dataset.r===undefined)return;
+ e.preventDefault();
+ var txt=(e.clipboardData||window.clipboardData).getData("text/plain").replace(/\r/g,"");
+ if(txt.indexOf("\t")<0&&txt.indexOf("\n")<0){document.execCommand("insertText",false,txt);return}
+ var lines=txt.split("\n");if(lines[lines.length-1]==="")lines.pop();
+ var r0=+t.dataset.r,c0=+t.dataset.c;
+ lines.forEach(function(ln,i){
+  var parts=ln.split("\t");
+  while(S.rows.length<=r0+i)S.rows.push(new Array(S.rows[0].length).fill(""));
+  parts.forEach(function(v,j){
+   while(S.rows[0].length<=c0+j&&c0+j<26){S.rows.forEach(function(row){row.push("")});S.aligns.push("left")}
+   if(c0+j<26)S.rows[r0+i][c0+j]=v;
+  });
+ });
+ render(true);toast("Pasted "+lines.length+" row(s)");
+});
+
+document.querySelectorAll("[data-al]").forEach(function(b){b.onclick=function(){S.aligns[cur.c]=b.dataset.al;render(true)}});
+$("hdr").onchange=function(){S.header=this.checked;render(true)};
+$("sty").onchange=function(){S.style=this.value;render(true)};
+var armT;$("make").onclick=function(){var b=this;if(S.rows.some(function(r){return r.some(Boolean)})&&!b.dataset.armed){b.dataset.armed=1;b.textContent="Click again to replace";toast("This replaces your current table. Click again to confirm.");armT=setTimeout(function(){delete b.dataset.armed;b.textContent="New table"},4000);return}clearTimeout(armT);delete b.dataset.armed;b.textContent="New table";newTable()};
+$("addR").onclick=addRow;$("addC").onclick=addCol;$("delR").onclick=delRow;$("delC").onclick=delCol;
+$("print").onclick=function(){window.print()};
+
+function tsv(){return S.rows.map(function(r){return r.map(function(v){return /[\t\n"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join("\t")}).join("\n")}
+function htmlTable(){
+ var h=(S.title?"<p><b>"+esc(S.title)+"</b></p>":"")+"<table style='border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px'>";
+ S.rows.forEach(function(r,i){h+="<tr>";r.forEach(function(v,c){
+  var hd=S.header&&i===0,tag=hd?"th":"td";
+  h+="<"+tag+" style='border:1px solid #888;padding:4px 8px;text-align:"+(hd?(S.aligns[c]||"left"):(S.aligns[c]||"left"))+(hd?";background:#dfe9e4":"")+"'>"+esc(v)+"</"+tag+">"});h+="</tr>"});
+ return h+"</table>";
+}
+function csvText(){return S.rows.map(function(r){return r.map(function(v){return /[,"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")}).join("\r\n")}
+$("copy").onclick=function(){
+ var done=function(){toast("Table copied. Paste it into Excel, Word or email.")};
+ var fallback=function(){
+  var rg=document.createRange();rg.selectNodeContents(tbl);var s=getSelection();s.removeAllRanges();s.addRange(rg);
+  var ok=false;try{ok=document.execCommand("copy")}catch(e){}
+  s.removeAllRanges();ok?done():toast("Copy was blocked. Select the table and press Ctrl+C.");
+ };
+ if(navigator.clipboard&&window.ClipboardItem){
+  navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([htmlTable()],{type:"text/html"}),"text/plain":new Blob([tsv()],{type:"text/plain"})})]).then(done,fallback);
+ }else fallback();
+};
+$("csv").onclick=function(){
+ var b=new Blob(["\ufeff"+csvText()],{type:"text/csv"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(b);a.download=(S.title||"table").replace(/[^\w\- ]+/g,"")+".csv";
+ document.body.appendChild(a);a.click();a.remove();toast("CSV downloaded");
+};
+
+function libGet(){try{return JSON.parse(localStorage.getItem("tb-lib-v1")||"[]")}catch(e){return []}}
+function libSet(a){try{localStorage.setItem("tb-lib-v1",JSON.stringify(a));return true}catch(e){return false}}
+function saveTable(asNew){
+ var a=libGet(),name=S.title||"";
+ var idx=(!asNew&&S.id)?a.findIndex(function(x){return x.id===S.id}):-1;
+ if(!name)name="Untitled table "+(a.length+1);
+ else if(asNew&&a.some(function(x){return x.name===name}))name+=" copy";
+ S.title=name;$("title").textContent=name;
+ if(idx<0)S.id="t"+Date.now().toString(36);
+ var d=JSON.parse(JSON.stringify(S)),rec={id:S.id,name:name,updated:Date.now(),data:d};
+ if(idx>=0)a[idx]=rec;else a.unshift(rec);
+ if(libSet(a)){toast("Saved \""+name+"\"")}else toast("Could not save. Browser storage is unavailable.");
+ save();renderLib();
+}
+function renderLib(){
+ var a=libGet();$("lib").textContent="My tables ("+a.length+")";
+ $("libl").innerHTML=a.length?a.map(function(x){
+  var d=x.data,when=new Date(x.updated).toLocaleString([], {dateStyle:"medium",timeStyle:"short"});
+  return "<div class='li"+(x.id===S.id?" on":"")+"'><div class='nm'><b>"+esc(x.name)+"</b><span>"+d.rows.length+" rows × "+d.rows[0].length+" columns · saved "+when+"</span></div><button data-open='"+x.id+"'>Open</button><button class='danger' data-del='"+x.id+"'>Delete</button></div>"}).join("")
+  :"<p class='empty'>No saved tables yet. Click Save to keep the table you are working on.</p>";
+}
+function openTable(id){
+ var x=libGet().find(function(y){return y.id===id});if(!x)return;
+ S=JSON.parse(JSON.stringify(x.data));S.id=id;cur={r:0,c:0};render(true);renderLib();$("libp").hidden=true;toast("Opened \""+x.name+"\"");
+}
+$("libl").addEventListener("click",function(e){
+ var b=e.target.closest("button");if(!b)return;
+ if(b.dataset.open)openTable(b.dataset.open);
+ else if(b.dataset.del){
+  if(!b.dataset.armed){b.dataset.armed=1;b.textContent="Click to confirm";setTimeout(function(){if(b.isConnected){delete b.dataset.armed;b.textContent="Delete"}},3000);return}
+  var a=libGet().filter(function(x){return x.id!==b.dataset.del});libSet(a);if(S.id===b.dataset.del){S.id=null;save()}renderLib();toast("Deleted");
+ }
+});
+$("save").onclick=function(){saveTable(false)};
+$("saveAs").onclick=function(){saveTable(true)};
+$("lib").onclick=function(){var p=$("libp");p.hidden=!p.hidden;renderLib()};
+
+if(!load()){S.rows=blank(5,4);S.aligns=new Array(4).fill("left");S.rows[0]=["Item","Qty","Price","Total"]}
+render(false);renderLib();
+</script>
+</body>
+</html>
