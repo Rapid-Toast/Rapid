@@ -270,5 +270,30 @@ $("lib").onclick=function(){var p=$("libp");p.hidden=!p.hidden;renderLib()};
 if(!load()){S.rows=blank(5,4);S.aligns=new Array(4).fill("left");S.rows[0]=["Item","Qty","Price","Total"]}
 render(false);renderLib();
 </script>
+<!-- Usage counting with GoatCounter -->
+<script data-goatcounter="https://rapidtables.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<script>
+(function(){
+ var names={make:"New table",addR:"Add row",addC:"Add column",delR:"Delete row",delC:"Delete column",
+  copy:"Copy table",print:"Print",csv:"Download CSV",save:"Save",saveAs:"Save as new",lib:"My tables"};
+ function track(id,title){
+  try{if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path:"click/"+id,title:title,event:true})}catch(e){}
+ }
+ document.addEventListener("click",function(e){
+  var b=e.target.closest&&e.target.closest("button");if(!b)return;
+  if(b.id&&names[b.id])track(b.id,names[b.id]);
+  else if(b.dataset.al)track("align-"+b.dataset.al,"Align "+b.dataset.al);
+  else if(b.dataset.open)track("open-saved","Open saved table");
+ });
+ var h=document.getElementById("hdr"),s=document.getElementById("sty");
+ if(h)h.addEventListener("change",function(){track("header-toggle","Header row toggle")});
+ if(s)s.addEventListener("change",function(){track("style-"+s.value,"Table style "+s.value)});
+ var t=document.getElementById("t");
+ if(t)t.addEventListener("paste",function(e){
+  var d=(e.clipboardData||window.clipboardData);var x=d?d.getData("text/plain"):"";
+  if(x.indexOf("\t")>=0||x.indexOf("\n")>=0)track("paste-grid","Paste from spreadsheet");
+ });
+})();
+</script>
 </body>
 </html>
